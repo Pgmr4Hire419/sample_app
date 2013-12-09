@@ -28,12 +28,7 @@ describe "Authentication" do
 	
 	describe "with valid information" do
       let(:user) { FactoryGirl.create(:user) }
-      #before do
-      #  fill_in "Email",    with: user.email.upcase
-      #  fill_in "Password", with: user.password
-      #  click_button "Sign in"
-      end
-	  before { sign_in user }
+      before { sign_in user }
 
       it { should have_selector('title', text: user.name) }
 	  it { should have_link('Users',    href: users_path) }
@@ -63,9 +58,21 @@ describe "Authentication" do
         end
 
         describe "after signing in" do
-
           it "should render the desired protected page" do
             page.should have_selector('title', text: 'Edit user')
+          end
+        end
+		
+		describe "in the Microposts controller" do
+
+          describe "submitting to the create action" do
+            before { post microposts_path }
+            specify { response.should redirect_to(signin_path) }
+          end
+
+          describe "submitting to the destroy action" do
+            before { delete micropost_path(FactoryGirl.create(:micropost)) }
+            specify { response.should redirect_to(signin_path) }
           end
         end
       end
@@ -96,16 +103,16 @@ describe "Authentication" do
 
       describe "visiting Users#edit page" do
         before { visit edit_user_path(wrong_user) }
-        it { should_not have_selector('title', text: full_title('Edit user')) }
+        it { should_not have_selector('title', text: 'Edit user') }
       end
 
       describe "submitting a PUT request to the Users#update action" do
         before { put user_path(wrong_user) }
-        specify { response.should redirect_to(root_url) }
+        specify { response.should redirect_to(root_path) }
       end
     end
-	
-	describe "as non-admin user" do
+
+    describe "as non-admin user" do
       let(:user) { FactoryGirl.create(:user) }
       let(:non_admin) { FactoryGirl.create(:user) }
 
@@ -113,7 +120,7 @@ describe "Authentication" do
 
       describe "submitting a DELETE request to the Users#destroy action" do
         before { delete user_path(user) }
-        specify { response.should redirect_to(root_url) }
+        specify { response.should redirect_to(root_path) }
       end
     end
   end
